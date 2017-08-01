@@ -3,6 +3,8 @@ import os
 import json
 import re
 import sys
+import time
+
 
 def format_add_time(originString):
     dateRegex = re.compile("\d{2}[a-z]+\s[a-z]+\s20\d{2}")
@@ -29,10 +31,15 @@ class SpiderPipeline(object):
     def process_item(self, item, spider):
         file_name = spider.name + '.json'
         #item['added_time'] = date_filter(item['added_time'])
-
         item['first_published_date'] = trans_to_stamp(item['first_published_date'])
         spider.house_list.append(item)
-
+        """""
+        if len(spider.house_list)==1024:
+            f.write_to_file()
+            f.write_id()
+            sys.exit()
+"""
+        
         # this means if the crawler now traverse to the house that match the
         # same house in local storage, stop the crawler
 
@@ -41,7 +48,7 @@ class SpiderPipeline(object):
             sys.exit()
         else:
             """
-
+        
         if not os.path.isfile(file_name):
             with open(file_name, 'w') as f:
                 line = json.dumps(dict(item), ensure_ascii=False) + '\n'
