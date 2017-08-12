@@ -6,6 +6,11 @@ class SoldItem(scrapy.Item):
     house_id = scrapy.Field() 
     sold_time = scrapy.Field()
 
+class UpdateItem(scrapy.Item):
+    house_id = scrapy.Field() 
+    crawling_time =scrapy.Field()
+    month_view=scrapy.Field()
+    price_change = scrapy.Field() 
 class OnSaleHouseDataItem(scrapy.Item):
 
     #houseinfo
@@ -24,7 +29,7 @@ class OnSaleHouseDataItem(scrapy.Item):
     added_time = scrapy.Field()
     first_published_date = scrapy.Field()
     listing_id=scrapy.Field()
-    monthview=scrapy.Field()
+    month_view=scrapy.Field()
     category = scrapy.Field()
     country = scrapy.Field()
     county = scrapy.Field()

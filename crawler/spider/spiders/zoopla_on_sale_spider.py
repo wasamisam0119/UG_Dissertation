@@ -61,22 +61,10 @@ class OnSaleHouseSpider(CrawlSpider):
     """Get the latest house info stored in local file"""
     """will be used to compared with online house info to implement realtime crawling"""
 
-
-    def read_house_id(file_name):
-        fp = open(file_name,"r+")
-        list_of_lines = fp.readlines()
-        return list_of_lines
-        
     def get_house_list():
         f = open(path,"a+")
         local_newest_house = json.loads(f.readline())
         return (local_newest_house['first_published_date'],local_newest_house['price'])
-
-    #house_id_list = read_house_id()
-#    house_id_list = read_house_id(file_id)
-#    house_id_set = set(house_id_list)
-    #house_id_dict = dict(zip(house_id_list,[x for x in range(len(house_id_list))]))
-    #print(house_id_dict)
 
     """
     def parse(self, response,house_id_list):
@@ -95,9 +83,10 @@ class OnSaleHouseSpider(CrawlSpider):
 
         listing_id  = response.css("html").re('listing_id":"(.*?)"')[0]
         if listing_id in self.house_id_dict:
-            print("find duplicate!!!")
+            print("Find duplicate item and Drop! Drop id is %s"%listing_id)
             return
         else:
+
             self.house_id_dict[listing_id] = len(self.house_id_dict)
             title = response.css("h2.listing-details-h1::text").extract_first()
             price = transGBP(response.css("div.listing-details-price.text-price strong::text").extract_first().strip())
@@ -126,10 +115,11 @@ class OnSaleHouseSpider(CrawlSpider):
             price_change_date = response.css("span.date::text").re("(?:Increased|Reduced) on:\s*(.*)")
 
 
+
             #???
             #需要判断是否存在
             crawling_time = time.strftime("%d-%m-%Y", time.localtime())
-            monthview= response.xpath("//*[@id=\"listings-agent\"]/div[4]/p[2]/strong[2]/text()").extract_first()
+            month_view= response.xpath("//*[@id=\"listings-agent\"]/div[4]/p[2]/strong[2]/text()").extract_first()
             
             energy_cost = response.css("button[data-rc-name = Energy]::attr(data-rc-value)").extract_first()
             insurance_cost = response.css("button[data-rc-name = Insurance]::attr(data-rc-value)").extract_first() 
@@ -184,6 +174,7 @@ class OnSaleHouseSpider(CrawlSpider):
             house_data_item['crawling_time'] = crawling_time
             house_data_item['street_address'] = street_address
             if len(asking_price_change)>0:
+                price_change_date = map(subDate,price_change_date)
                 house_data_item['price_change'] = list(zip(asking_price_change,price_change_date))
             if num_of_bedrooms!=None:
                 house_data_item['num_of_bedrooms'] = int(num_of_bedrooms)
@@ -193,10 +184,10 @@ class OnSaleHouseSpider(CrawlSpider):
                 house_data_item['num_of_bathrooms'] = int(num_of_bathrooms)
             else:
                 house_data_item['num_of_bathrooms'] = -1
-            if monthview!=None:
-                house_data_item['monthview'] =int(monthview)
+            if month_view!=None:
+                house_data_item['month_view'] =int(month_view)
             else:
-                house_data_item['monthview'] =-1
+                house_data_item['month_view'] =-1
 
             if len(agent_address)>0:
                 house_data_item['agent_address'] = agent_address[0]
