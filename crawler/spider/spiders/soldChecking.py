@@ -12,6 +12,7 @@ sys.path.append("spiders")
 from zoopla_on_sale_spider import transGBP
 from zoopla_on_sale_spider import subDate
 
+houseid_pattern = re.compile("\d+")
 class OldChecking(scrapy.Spider):
 
     name = "soldspider"
@@ -44,7 +45,7 @@ class OldChecking(scrapy.Spider):
             month_view= response.xpath("//*[@id=\"listings-agent\"]/div[4]/p[2]/strong[2]/text()").extract_first()
 
             if month_view!=None:
-                update_item['month_view'] = int(month_view)
+                update_item['month_view'] = int(month_view.replace(",",""))
             else:
                 update_item['month_view'] = -1
 
