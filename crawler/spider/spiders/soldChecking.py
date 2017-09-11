@@ -31,7 +31,7 @@ class OldChecking(scrapy.Spider):
         title = response.css("h2.listing-details-h1::text").extract_first()
         if not title:
             sold_house = spider.items.SoldItem()
-            sold_house['house_id'] = houseid_pattern.search(response.url).group()
+            sold_house['house_id'] = houseid_pattern.search(response.request.meta.get('redirect_urls')[0]).group()
             sold_house['sold_time'] = time.mktime(time.localtime())
             #mark as sold
             return sold_house
