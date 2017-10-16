@@ -8,8 +8,6 @@ import time
 import datetime
 from spider.items import *
 
-#import pymysql
-
 """def format_add_time(originString):
     dateRegex = re.compile("\d{2}[a-z]+\s[a-z]+\s20\d{2}")
     if len(dateRegex.findall(originString))>0:
@@ -65,7 +63,7 @@ class StorePipeline(object):
     id_list = []
     # responsiable for adding new property/deleting sold property
     
-    def activateMode(mode,spidername,property_info_file,current_id_file,all_id_file,ex_file):
+    def activate_mode(self,mode,spidername,property_info_file,current_id_file,all_id_file,ex_file):
         if "zoopla" in spidername:
             f = open(current_id_file,'a+')
             f.seek(0)
@@ -89,20 +87,17 @@ class StorePipeline(object):
 
         if "sale" in spider.name:
         #edit house.json
-            activateMode("sale",spider.name,sale_info,house_sale_id,all_sale_id,ex_sale_name)
+            activate_mode("sale",spider.name,sale_info,house_sale_id,all_sale_id,ex_sale_name)
         else:
-            activateMode("rent",spider.name,rent_info,house_rent_id,all_rent_id,ex_rent_name)
+            activate_mode("rent",spider.name,rent_info,house_rent_id,all_rent_id,ex_rent_name)
 
        
             
-    def process_item(self, item, spider):
-        #不同的spider 进行不同的清洗和 append
-        if spider.name =="zoopla_on_sale":
+    def store_warehouse(self,mode,item, spider):
+        if "zoopla" in spider.name:
             self.id_list.append(item['listing_id']+"\n")
-
-            house_json = json.dumps(dict(item), ensure_ascii=False) + '\n'
-            
-            self.house_json_list.append(house_json)
+            info_json = json.dumps(dict(item), ensure_ascii=False) + '\n'
+            self.house_json_list.append(info_json)
             if len(self.id_list)==256:
                 for i in range(len(self.id_list)):
                     #write id to house_id.txt
@@ -113,15 +108,12 @@ class StorePipeline(object):
                     self.file.write(self.house_json_list[i])
                 self.id_list.clear()
                 self.house_json_list.clear()
-"""
-        elif spider.name =="zoopla_to_rent":
-            if 
-            """
-
-
         else:
-
-            if isinstance(item,SoldItem):
+            if isinstance(item,UpdateItem):
+                #update house item
+                update_json= json.dumps(dict(item), ensure_ascii=False) + '\n'
+                self.update_fp.write(update_json)
+            else:
                 #SoldItem:{house_id:111111, sold_time:2017-02-03}
                 #delete sold id
                 del spider.house_id_dict[item['house_id']]
@@ -130,15 +122,16 @@ class StorePipeline(object):
                 sold_house_info= json.dumps(self.sold_house_list, ensure_ascii=False) + '\n'
                 self.file.write(sold_house_info)
                 self.sold_house_list.clear()
-            else:
-                #update house item
-                update_json= json.dumps(dict(item), ensure_ascii=False) + '\n'
-                self.update_fp.write(update_json)
 
-        # this means if the crawler now traverse to the house that match the
-        # same house in local storage, stop the crawler
 
+    def process_item(self, item, spider):
+        #不同的spider 进行不同的清洗和 append
+        if "sale" in spider.name:
+            store_warehouse("sale",item,spider)
+        else:
+            store_warehouse("rent",item,spider)
         return item
+
     def close_spider(self, spider):
         # close house.json or sold.json
         self.file.close()
