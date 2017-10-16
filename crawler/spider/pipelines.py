@@ -28,7 +28,6 @@ def date_filter(datelist):
         format_add_time(item)
     filter_object  = filter((lambda x: x==""), datelist)
     datelist = [item for item in filter_object]
-    print(datelist)
     return datelist
 
 
@@ -52,84 +51,106 @@ def set_timezone(timezone):
     return datetime.datetime.now(tz).strftime("%d-%m-%Y")
 
 class StorePipeline(object):
-    file_name =  'house'+'.json'
-    sold_name = 'sold.json'
-
-    house_list = {}
+    sale_info =  'sale_house.json'
+    rent_info = 'rent_house.json'
+    ex_sale_name = 'sold.json'
+    ex_rent_name = 'rented.json'
+    house_rent_id ='house_rent_id.txt'
+    house_sale_id = "house_sale_id.txt"
+    all_rent_id = "all_rent_id.txt "
+    all_sale_id = "all_sale_id.txt"
+    timezone="Europe/London"
+    sold_house_list = {}
     house_json_list = []
     id_list = []
-    f = open("house_id.txt",'a+')
-
-    def open_spider(self,spider):
-        #连接不同数据库
-        fp = open("house_id.txt",'r+')
-        temp_id_list = list(map(myStrip,fp.readlines()))
-        fp.close()
-        i = 0
-
-        for item in temp_id_list:
-            spider.house_id_dict[item] = i
-            i+=1
-
-        if spider.name =="zoopla_on_sale":
-            self.file = open(self.file_name, 'a+') 
+    # responsiable for adding new property/deleting sold property
+    
+    def activateMode(mode,spidername,property_info_file,current_id_file,all_id_file,ex_file):
+        if "zoopla" in spidername:
+            f = open(current_id_file,'a+')
+            f.seek(0)
+            temp_id_list = list(map(myStrip,self.f.readlines()))
+            i = 0
+            for item in temp_id_list:
+                spider.house_id_dict[item] = i
+                i+=1
+            self.file = open(property_info_file, 'a') 
+            self.wholeid_fp= open(all_id_file,'a+')
         else:
             #spider is soldSPider
-            date = set_timezone("Europe/London")
+            date = set_timezone(self.timezone)
             #create update file
-            update_file = "%s_update.json"%date
-            self.update_fp= open(update_file,"a+")
+            update_file = "../dailyupdate/%s_%s_update.json"%(mode,date)
+            self.update_fp= open(update_file,"w+")
             #create solditem file
-            self.file = open(self.sold_name,'a')
+            self.file = open(self.ex_file,'a')
+ 
+    def open_spider(self,spider):
 
+        if "sale" in spider.name:
+        #edit house.json
+            activateMode("sale",spider.name,sale_info,house_sale_id,all_sale_id,ex_sale_name)
+        else:
+            activateMode("rent",spider.name,rent_info,house_rent_id,all_rent_id,ex_rent_name)
+
+       
+            
     def process_item(self, item, spider):
         #不同的spider 进行不同的清洗和 append
         if spider.name =="zoopla_on_sale":
             self.id_list.append(item['listing_id']+"\n")
-            #self.house_list[item['listing_id']]=dict(item)
+
             house_json = json.dumps(dict(item), ensure_ascii=False) + '\n'
+            
             self.house_json_list.append(house_json)
-            #self.house_list.clear()
             if len(self.id_list)==256:
                 for i in range(len(self.id_list)):
+                    #write id to house_id.txt
                     self.f.write(self.id_list[i])
+                    #write id to house_id_whole.txt
+                    self.wholeid_fp.write(self.id_list[i])
+                    #write house info to house.json
                     self.file.write(self.house_json_list[i])
                 self.id_list.clear()
                 self.house_json_list.clear()
+"""
+        elif spider.name =="zoopla_to_rent":
+            if 
+            """
+
+
         else:
+
             if isinstance(item,SoldItem):
+                #SoldItem:{house_id:111111, sold_time:2017-02-03}
                 #delete sold id
                 del spider.house_id_dict[item['house_id']]
-                self.house_list[item['house_id']]=dict(item)
-                sold_house_info= json.dumps(self.house_list, ensure_ascii=False) + '\n'
+                #sold house item
+                self.sold_house_list[item['house_id']]=dict(item)
+                sold_house_info= json.dumps(self.sold_house_list, ensure_ascii=False) + '\n'
                 self.file.write(sold_house_info)
-                self.house_list.clear()
+                self.sold_house_list.clear()
             else:
+                #update house item
                 update_json= json.dumps(dict(item), ensure_ascii=False) + '\n'
                 self.update_fp.write(update_json)
 
         # this means if the crawler now traverse to the house that match the
         # same house in local storage, stop the crawler
 
-        """
-        if not os.path.isfile(file_name):
-            with open(file_name, 'w') as f:
-                line = json.dumps(dict(item), ensure_ascii=False) + '\n'
-                f.write(line)
-        else:
-            with open(file_name, 'a') as f:
-                line = json.dumps(dict(item), ensure_ascii=False) + '\n'
-                f.write(line)
-                """
         return item
     def close_spider(self, spider):
+        # close house.json or sold.json
         self.file.close()
+        #close house_id.txt
+        self.f.close()
         if spider.name == "zoopla_on_sale":
-            self.f.close()
+            self.wholeid_fp.close()
         else:
             self.update_fp.close()
-            self.house_id_fp = open("house_id.txt","w+")
-            for item in spider.house_id_dict:
-                self.house_id_fp.write(item+"\n")
-            self.house_id_fp.close()
-        #1.写入不同的数据表
+            if len(spider.house_id_dict) >0 :
+                self.house_id_fp = open("house_id.txt","w+")
+                for item in spider.house_id_dict:
+                    self.house_id_fp.write(item+"\n")
+                self.house_id_fp.close()
+            #1.写入不同的数据表
