@@ -66,14 +66,15 @@ class StorePipeline(object):
     # responsiable for adding new property/deleting sold property
     
     def activate_mode(self,mode,spider,property_info_file,current_id_file,all_id_file,ex_file):
+        self.f = open(current_id_file,'a+')
+        self.f.seek(0)
+        temp_id_list = list(map(myStrip,self.f.readlines()))
+        print(temp_id_list)
+        i = 0
+        for item in temp_id_list:
+            spider.house_id_dict[item] = i
+            i+=1
         if "zoopla" in spider.name:
-            self.f = open(current_id_file,'a+')
-            self.f.seek(0)
-            temp_id_list = list(map(myStrip,self.f.readlines()))
-            i = 0
-            for item in temp_id_list:
-                spider.house_id_dict[item] = i
-                i+=1
             self.file = open(property_info_file, 'a') 
             self.wholeid_fp= open(all_id_file,'a+')
         else:
@@ -92,7 +93,6 @@ class StorePipeline(object):
         #edit house.json
             self.activate_mode("sale",spider,self.sale_info,self.house_sale_id,self.all_sale_id,self.ex_sale_name)
         else:
-            print("hello")
             self.activate_mode("rent",spider,self.rent_info,self.house_rent_id,self.all_rent_id,self.ex_rent_name)
 
        
@@ -113,8 +113,9 @@ class StorePipeline(object):
                     self.file.write(self.house_json_list[i])
                 self.id_list.clear()
                 self.house_json_list.clear()
-            if count%4000==0:
+            if self.count%4000==0:
                 gc.collect()
+                self.count = 0
 
         else:
             if isinstance(item,UpdateItem):
@@ -151,9 +152,9 @@ class StorePipeline(object):
             self.update_fp.close()
             if len(spider.house_id_dict) >0 :
                 if "salespider" in spider.name:
-                    self.house_id_fp = open(house_sale_id,"w+")
+                    self.house_id_fp = open(self.house_sale_id,"w+")
                 else:
-                    self.house_id_fp = open(house_rent_id,"w+")
+                    self.house_id_fp = open(self.house_rent_id,"w+")
                 for item in spider.house_id_dict:
                     self.house_id_fp.write(item+"\n")
                 self.house_id_fp.close()
