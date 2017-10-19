@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import json
+import gc
 #import re
 import sys
 import pytz
@@ -61,12 +62,13 @@ class StorePipeline(object):
     sold_house_list = {}
     house_json_list = []
     id_list = []
+    count =0
     # responsiable for adding new property/deleting sold property
     
-    def activate_mode(self,mode,spidername,property_info_file,current_id_file,all_id_file,ex_file):
-        if "zoopla" in spidername:
-            f = open(current_id_file,'a+')
-            f.seek(0)
+    def activate_mode(self,mode,spider,property_info_file,current_id_file,all_id_file,ex_file):
+        if "zoopla" in spider.name:
+            self.f = open(current_id_file,'a+')
+            self.f.seek(0)
             temp_id_list = list(map(myStrip,self.f.readlines()))
             i = 0
             for item in temp_id_list:
@@ -81,15 +83,17 @@ class StorePipeline(object):
             update_file = "../dailyupdate/%s_%s_update.json"%(mode,date)
             self.update_fp= open(update_file,"w+")
             #create solditem file
-            self.file = open(self.ex_file,'a')
- 
+            print("what happen")
+            self.file = open(ex_file,'a')
+
     def open_spider(self,spider):
 
         if "sale" in spider.name:
         #edit house.json
-            activate_mode("sale",spider.name,sale_info,house_sale_id,all_sale_id,ex_sale_name)
+            self.activate_mode("sale",spider,self.sale_info,self.house_sale_id,self.all_sale_id,self.ex_sale_name)
         else:
-            activate_mode("rent",spider.name,rent_info,house_rent_id,all_rent_id,ex_rent_name)
+            print("hello")
+            self.activate_mode("rent",spider,self.rent_info,self.house_rent_id,self.all_rent_id,self.ex_rent_name)
 
        
             
@@ -98,7 +102,8 @@ class StorePipeline(object):
             self.id_list.append(item['listing_id']+"\n")
             info_json = json.dumps(dict(item), ensure_ascii=False) + '\n'
             self.house_json_list.append(info_json)
-            if len(self.id_list)==256:
+            if len(self.id_list)==4:
+                self.count+=4
                 for i in range(len(self.id_list)):
                     #write id to house_id.txt
                     self.f.write(self.id_list[i])
@@ -108,6 +113,9 @@ class StorePipeline(object):
                     self.file.write(self.house_json_list[i])
                 self.id_list.clear()
                 self.house_json_list.clear()
+            if count%4000==0:
+                gc.collect()
+
         else:
             if isinstance(item,UpdateItem):
                 #update house item
@@ -127,9 +135,9 @@ class StorePipeline(object):
     def process_item(self, item, spider):
         #不同的spider 进行不同的清洗和 append
         if "sale" in spider.name:
-            store_warehouse("sale",item,spider)
+            self.store_warehouse("sale",item,spider)
         else:
-            store_warehouse("rent",item,spider)
+            self.store_warehouse("rent",item,spider)
         return item
 
     def close_spider(self, spider):
@@ -137,13 +145,15 @@ class StorePipeline(object):
         self.file.close()
         #close house_id.txt
         self.f.close()
-        if spider.name == "zoopla_on_sale":
+        if "zoopla" in spider.name :
             self.wholeid_fp.close()
         else:
             self.update_fp.close()
             if len(spider.house_id_dict) >0 :
-                self.house_id_fp = open("house_id.txt","w+")
+                if "salespider" in spider.name:
+                    self.house_id_fp = open(house_sale_id,"w+")
+                else:
+                    self.house_id_fp = open(house_rent_id,"w+")
                 for item in spider.house_id_dict:
                     self.house_id_fp.write(item+"\n")
                 self.house_id_fp.close()
-            #1.写入不同的数据表
