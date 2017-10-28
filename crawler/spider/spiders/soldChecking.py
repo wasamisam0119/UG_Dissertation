@@ -13,7 +13,7 @@ from zoopla_on_sale_spider import transGBP
 from zoopla_on_sale_spider import subDate
 
 houseid_pattern = re.compile("\d+")
-class OldChecking(scrapy.Spider):
+class SaleChecking(scrapy.Spider):
 
     name = "salespider"
     allowed_domains = ['zoopla.co.uk']

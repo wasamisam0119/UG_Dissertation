@@ -12,6 +12,7 @@ import sys
 sys.path.append("spiders")
 from zoopla_on_sale_spider import transGBP
 from zoopla_on_sale_spider import subDate
+from scrapy.exceptions import CloseSpider
 
 def myStrip(string):
     return string.strip()
@@ -21,6 +22,7 @@ class ToRentHouseSpider(CrawlSpider):
     filename = "zoopla_to_rent.json"
     allowed_domains = ['zoopla.co.uk']
     house_id_dict = {}
+    close_down = False
     start_urls = [
             'https://www.zoopla.co.uk/to-rent/']
     rules = (
@@ -32,6 +34,8 @@ class ToRentHouseSpider(CrawlSpider):
 
     def parse_house(self, response):
 
+        if self.close_down:
+            raise CloseSpider(reason='Usage exceeded')
         listing_id  = response.css("html").re('listing_id":"(.*?)"')[0]
         if listing_id in self.house_id_dict:
             print("Find duplicate item and Drop! Drop id is %s"%listing_id)

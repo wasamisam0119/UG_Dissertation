@@ -8,6 +8,7 @@ import time
 import os
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
+from scrapy.exceptions import CloseSpider
 
 path = "../../zoopla_on_sale.json"
 houseid_pattern = re.compile("\d+")
@@ -56,6 +57,7 @@ class OnSaleHouseSpider(CrawlSpider):
         Rule(LinkExtractor(allow=('/for-sale/details/',),),
              callback="parse_house"),
     )
+    close_down = False
 
 
     """Get the latest house info stored in local file"""
@@ -80,7 +82,9 @@ class OnSaleHouseSpider(CrawlSpider):
     
 """
     def parse_house(self, response):
-
+        
+        if self.close_down:
+            raise CloseSpider(reason='Usage exceeded')
         listing_id  = response.css("html").re('listing_id":"(.*?)"')[0]
         if listing_id in self.house_id_dict:
             print("Find duplicate item and Drop! Drop id is %s"%listing_id)

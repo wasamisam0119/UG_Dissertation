@@ -9,6 +9,7 @@ import time
 import datetime
 from spider.items import *
 
+
 """def format_add_time(originString):
     dateRegex = re.compile("\d{2}[a-z]+\s[a-z]+\s20\d{2}")
     if len(dateRegex.findall(originString))>0:
@@ -63,13 +64,14 @@ class StorePipeline(object):
     house_json_list = []
     id_list = []
     count =0
+    start_time = time.time()
+    
     # responsiable for adding new property/deleting sold property
     
     def activate_mode(self,mode,spider,property_info_file,current_id_file,all_id_file,ex_file):
         self.f = open(current_id_file,'a+')
         self.f.seek(0)
         temp_id_list = list(map(myStrip,self.f.readlines()))
-        print(temp_id_list)
         i = 0
         for item in temp_id_list:
             spider.house_id_dict[item] = i
@@ -84,7 +86,6 @@ class StorePipeline(object):
             update_file = "../dailyupdate/%s_%s_update.json"%(mode,date)
             self.update_fp= open(update_file,"w+")
             #create solditem file
-            print("what happen")
             self.file = open(ex_file,'a')
 
     def open_spider(self,spider):
@@ -116,6 +117,10 @@ class StorePipeline(object):
             if self.count%4000==0:
                 gc.collect()
                 self.count = 0
+            if time.time() - self.start_time>10800:
+                spider.close_down = True
+                print("Time is up!!!!!")
+            
 
         else:
             if isinstance(item,UpdateItem):
