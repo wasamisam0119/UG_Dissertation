@@ -119,6 +119,8 @@ class ToRentHouseSpider(CrawlSpider):
             house_data_item['title'] = title
             if "pcm" in rent_price:
                 house_data_item['monthly_price'] = transGBP(rent_price[:-4])
+            elif "POA" in rent_price:
+                house_data_item['monthly_price'] = -1
             else:
                 house_data_item['monthly_price'] = transGBP(rent_price)
 
@@ -142,7 +144,7 @@ class ToRentHouseSpider(CrawlSpider):
             else:
                 house_data_item['num_of_bathrooms'] = -1
             if month_view!=None:
-                house_data_item['month_view'] =int(month_view)
+                house_data_item['month_view'] =int(month_view.replace(",",""))
             else:
                 house_data_item['month_view'] =-1
 

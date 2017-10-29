@@ -189,7 +189,7 @@ class OnSaleHouseSpider(CrawlSpider):
             else:
                 house_data_item['num_of_bathrooms'] = -1
             if month_view!=None:
-                house_data_item['month_view'] =int(month_view)
+                house_data_item['month_view'] =int(month_view.replace(",",""))
             else:
                 house_data_item['month_view'] =-1
 
