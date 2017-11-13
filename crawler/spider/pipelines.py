@@ -76,6 +76,7 @@ class StorePipeline(object):
         for item in temp_id_list:
             spider.house_id_dict[item] = i
             i+=1
+        spider.house_id_list = temp_id_list
         if "zoopla" in spider.name:
             self.file = open(property_info_file, 'a') 
             self.wholeid_fp= open(all_id_file,'a+')
