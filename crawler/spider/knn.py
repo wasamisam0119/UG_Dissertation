@@ -1,42 +1,66 @@
 import region_extractor 
 import sys
-
+import os
 import json_reader 
 import math
 from statistics import median
+import pandas as pd
+import geopy.distance
 
-homo_attribute = ["num_bath","num_bed","price","month_view","coordinate","property_type"]
-train_features = ["num_bath","num_bed","month_view","property_type","coordinate"]
-#= ["num_bath","bed_dis","price","month_view_dis","coordinate_dis","property_type_dis"]
-hetero_attribute = ["num_bath","num_bed","month_view","coordinate","property_type"]
+train_features = ["num_bath","num_bed","month_view","coordinate"]
+weights = pd.DataFrame([  2.15520417*10**-2,   1.19257808*10**-2,   3.14956906*10**-7,   7.93325839*10**-6]).T
 
-def house_KNN(house_info,neighbours,K,attribute_list):
-    neighbour_list = []
-    for neighbour in neighbours:
-        #print(neighbour)
-        neighbour_list.append((calculate_weightedDistance(house_info,neighbour,attribute_list),neighbour))
-    K_neighbours_list = sorted(neighbour_list,key = lambda t:t[0],reverse = False)[:K]
-    print(K_neighbours_list)
+def clean_noise(house_list,minimum_price,house_type):
+
+    
+    house_list = pd.DataFrame(house_list)
+    house_list = house_list[(house_list.price>minimum_price) & (house_list.property_type.isin(house_type)) & (house_list.num_bed>0)]
+    return house_list
+
+def house_KNN(house_info,neighbours,K,attribute_list,distance_method):
+    neighbours['distance'] = neighbours.apply(lambda row: distance_method(house_info,row,attribute_list),axis=1)
+    neighbours = neighbours.sort_values('distance')
+   
+    K_neighbours_list = neighbours[:K].copy()
     return K_neighbours_list
+    """
+    for neighbour in neighbours:
+        print(neighbour)
+        print(house_info)
+        neighbour_list.append((calculate_weightedDistance(house_info,neighbour,attribute_list),neighbour))
+    """
+    #K_neighbours_list = sorted(neighbour_list,key = lambda t:t[0],reverse = False)[:K]
+    #K_neighbours_list
+    #print(K_neighbours_list)
+    #print(neighbours.head())
+    #return K_neighbours_list
+#def estimate_price(K_neighbours_list):
 
 def calculate_weightedDistance(house_info,neighbour,attribute):
     distance_list = []
     distance = 0
-    for i in range(len(attribute)-2):
-        distance_list.append(math.sqrt((house_info[attribute[i]]-neighbour[attribute[i]])**2))
-    try:
-        geo_distance = math.sqrt((float(house_info["coordinate"][0])-float(neighbour["coordinate"][0]))**2 + (float(house_info["coordinate"][1])-float(neighbour["coordinate"]    [1]))**2)
-    except ValueError as ve:
-        geo_distance = 0.1
-    distance_list.append(geo_distance)
-    #property type
-    if house_info["property_type"] == neighbour["property_type"]:
-        distance_list.append(0)
-    else:
-        distance_list.append(1)
-    for feature_distance in distance_list:
-        distance += feature_distance*gaussian_kernel(feature_distance)
-    return distance
+    geo_dis = geopy.distance.vincenty(house_info["coordinate"],neighbour["coordinate"]).m
+    for feature in attribute:
+        if feature == "coordinate":
+            distance_list.append(geo_dis)
+        else:
+            distance_list.append(squareDiffer(house_info[feature],neighbour[feature]))
+    distance_list = pd.DataFrame(distance_list)
+    return weights.dot(distance_list)[0][0]
+
+def calculate_Distance(house_info,neighbour,attribute):
+    distance_list = []
+    distance = 0
+    geo_dis = geopy.distance.vincenty(house_info["coordinate"],neighbour["coordinate"]).m
+    for feature in attribute:
+        if feature == "coordinate":
+            distance_list.append(geo_dis)
+        else:
+            distance_list.append(squareDiffer(house_info[feature],neighbour[feature]))
+    distance_list = pd.DataFrame(distance_list)
+    return distance_list.sum()
+
+                    
 
 def gaussian_kernel(feature_distance):
     l = 2
@@ -93,6 +117,7 @@ def Euclidean_distance(x1,x2):
     return math.sqrt(d)
 
 def squareDiffer(x1,x2):
+    """
     #coordinates
     if type(x1) is list:
         s = 0
@@ -100,6 +125,7 @@ def squareDiffer(x1,x2):
             for i in range(len(x1)):
                 s += (float(x1[i])-float(x2[i]))**2
         except ValueError as ve:
+
             s = 0.1
         return s
     #property_type
@@ -112,54 +138,35 @@ def squareDiffer(x1,x2):
             return 1
     #other features
     else:
-        return (x1-x2)**2
+        """
+    return (x1-x2)**2
 
-from sklearn import preprocessing
-def prepareTrainingdata(houseid,sale_type,estimate_type):
+def prepareTrainingdata(region,sale_type,estimate_type):
     whole_data_set = []
     house_distance_set = []
     price_difference_set = []
-    region_houses_list = locate_range(houseid,estimate_type+"_region/",sale_type)
-    print(len(region_houses_list))
+    region_houses_list = list(json_reader.json_read(estimate_type+"_region/",region)[0].values())[0]
+    #region_houses_list = locate_range(houseid,estimate_type+"_region/",sale_type)
     for i, house_info in enumerate(region_houses_list):
         #house_info = extract_house_info(house)
         for j in range(i+1,len(region_houses_list)):
             
-            house = region_houses_list[i]
+            house = region_houses_list[j]
             house_d_features = []
             #print(house_info["listing_id"])
 
-            price_difference = (house["price"] - house_info["price"])**2
+            price_difference = math.sqrt((house["price"] - house_info["price"])**2)
+            #sys.exit()
             #house_d_features.append(house["listing_id"])
             for feature in train_features:
                 house_d_features.append(squareDiffer(house[feature],house_info[feature]))
 
             house_distance_set.append(house_d_features)
             price_difference_set.append(price_difference)
-    min_max_scaler = preprocessing.MinMaxScaler()
-    examples= min_max_scaler.fit_transform(pd.DataFrame(house_distance_set))
+    examples= pd.DataFrame(house_distance_set)
     #examples = preprocessing.scale(pd.DataFrame(house_distance_set))
     labels = pd.DataFrame(price_difference_set)
-    
     return (examples,labels)
-#需要把每个房子
-#print(extract_house_info("27274665"))
-from sklearn.model_selection import train_test_split
-features, target = prepareTrainingdata("27274665","rent","rent")
-print(features.shape)
-X_train, X_test, y_train, y_test = train_test_split(features, target,
-                                                    test_size=0.33,
-                                                    random_state=42)
-from sklearn import linear_model
-lr = linear_model.LinearRegression()
-model = lr.fit(X_train, y_train)
-predictions=model.predict(X_test)
-
-from sklearn.metrics import mean_squared_error
-print('RMSE is: %d'%mean_squared_error(y_test,predictions))
-print(model.score(X_test,y_test))
-
-
 
 
 def estimate_price(houseid,sale_type,estimate_type):
@@ -178,3 +185,7 @@ def estimate_price(houseid,sale_type,estimate_type):
 
 #print(calculate_mid_price(neighbours))
 
+
+def readData(filename):
+    region_houses_list = list(json_reader.json_read(estimate_type+"_region/",region)[0].values())[0]
+    return region_houses_list
