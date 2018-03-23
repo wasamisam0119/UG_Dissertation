@@ -1,10 +1,39 @@
 import time
 import os
+from KNN_Middleware import KNN_Middleware 
+from sqlalchemy import create_engine  
+from AreaPipeline import AreaPipeline
+
+house_extracted = "sale_extracted.json"
+log = "user_pipe.log"
+config = "area_config.txt"
+
 
 while True:
-    os.system("scrapy crawl zoopla_on_sale")
-    time.sleep(36000)
-    os.system("scrapy crawl soldspider")
-    time.sleep(3600)
+
+    #check on-sale houses and crawling new houses
+    os.system("python salecheck_regular.py 1>salecheckoutput 2>salecheckerror")
+
+    #extract useful data and classify houses into regions
+    os.system("python auto-update.py")
+
+    #start KNN process for new crawled houses 
+    knnMidd = KNN_Middleware()
+    new_added_house = knnMidd.KNN_process(house_extracted,log)
+    #if there is new added house, write to database
+    if new_added_house.shape[0] >0:
+        engine =create_engine('mysql+pymysql://root:@localhost:3306/G53DT?charset=utf8')
+        new_added_house.to_sql("Houses",engine,if_exists = 'append',index_label = "listing_id",index =False)
+
+    #check to-rent property and crawling new property
+    os.system("python rentcheck_regular.py 1>rentcheckoutput 2>rentcheckerror")
+    time.sleep(28800)    
+    #Update area information
+    area_pipe = AreaPipeline(config)
+    area_df = area_pipe.area_process()
+    engine =create_engine('mysql+pymysql://root:@localhost:3306/G53DT?charset=utf8')
+    area_df.to_sql("Area",engine,if_exists = 'replace')
+
+    time.sleep(5)
 
 
