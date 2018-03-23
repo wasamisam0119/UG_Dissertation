@@ -11,10 +11,38 @@ import pandas as pd
 class KNN_Middleware(object):
 
     def __init__(self):
-
         pass
         #self.filename = "sale_extracted.json"
         #self.log = "user_pipe.log"
+
+    def KNN_process(self,house_extracted_name,log):
+        with open(house_extracted_name,"r") as r:
+            for item in r:
+                info = json.loads(item)
+                houses_info = pd.DataFrame(info).T
+                
+        houses_info['crawling_time'] = pd.to_datetime(houses_info['crawling_time'],format='%d-%m-%Y')
+
+        last_time =self.reading_history(log)
+
+        new_added_house = houses_info[(houses_info.crawling_time>last_time)]
+        estimate_type = "rent"
+        sale_type = "sale"
+        self.write_time(log)
+        new_added_house = new_added_house[:5].copy()
+        if new_added_house.shape[0]<=1:
+            return pd.DataFrame()
+        else:
+            new_added_house['estimate_price'] = new_added_house.apply(lambda row:self.knn_apply(estimate_type,sale_type,row),axis = 1)
+            new_added_house['lat'] =new_added_house.apply(lambda row: row['coordinate'][0],axis = 1)
+            new_added_house['lon'] =new_added_house.apply(lambda row: row['coordinate'][1],axis = 1)
+            new_added_house['listing_id']=new_added_house['listing_id'].astype(int)
+            new_added_house = new_added_house.drop(['coordinate'],axis = 1)
+            new_added_house = new_added_house.drop(['top3near_by'],axis = 1)
+
+        return new_added_house
+
+
 
     def reading_history(self,log):
         with open(log,"r") as r:
@@ -31,7 +59,7 @@ class KNN_Middleware(object):
     def knn_apply(self,estimate_type,sale_type,house):
         region_list = locate_range(house['postcode'],estimate_type+"_region/",sale_type)
         neighbours = pd.DataFrame(region_list)
-        neighbours.drop(neighbours[neighbours['listing_id']==house['listing_id']].index )
+        neighbours = neighbours.drop(neighbours[neighbours['listing_id']==house['listing_id']].index )
         K_neighbours = knn.house_KNN(house,neighbours,5,train_features,knn.calculate_weightedDistance,weights)
         return K_neighbours['price'].mean() 
 
@@ -60,17 +88,5 @@ def knn_apply1(estimate_type,sale_type,new_added_house):
     return new_added_house
 
 """
-
-
-
-
-"""
-两个func：
-把没用的attribute drop掉 
-写入数据库
-"""
-
-
-
 
 
