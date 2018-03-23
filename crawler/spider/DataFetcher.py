@@ -14,23 +14,26 @@ def string_toDatetime(string):
 def timestamp_toDatetime(timestamp):
     return datetime.fromtimestamp(timestamp)
 
+"""
+Fetch the sold house information from sold house id
+"""
 class DataFetcher(object):
        
-    def __init__(self,name):
+    def __init__(self,name,pattern):
         self.f = open(name+"_extracted.json","r")
         if name =="sale":
             self.exf = open("sold.json","r")
         else:
             self.exf = open("rented.json","r")
         self.container = []
-        self.pattern = re.compile("\w+")
-        self.citypattern = re.compile("[A-Za-z]+")
-        #self.read_configure("conf.txt")
+
+        if pattern[-1].isdigit():
+            self.citypattern = re.compile("\w+")
+        else:
+            self.citypattern = re.compile("[A-Za-z]+")
         self.region_container={}
 
-       # self.region_container= City(self.region)
-       #for item in self.region:
-         #   self.region_container[item] = []
+
     """
     def read_configure(self,con_file):
         with open(con_file,"r") as f:
@@ -49,7 +52,7 @@ class DataFetcher(object):
 
     def extract_region(self, postcode):
         postcode_split = postcode.split()
-        region  = self.pattern.search(postcode_split[1]).group(0)
+        region  = self.citypattern.search(postcode_split[1]).group(0)
         return region
 
     #return all the sold house information as a list of dicts
@@ -67,7 +70,6 @@ class DataFetcher(object):
                     #get the region of the sold house
                     region = self.extract_region(origin_postcode)
                     data[house_id]["region"] = region
-                    data[house_id]["super_region"] = self.citypattern.search(region).group(0)
                     data[house_id]["speed"] = self.calculate_salespeed(data[house_id]["first_published_date"],ex_house[house_id]["sold_time"])
                     data[house_id]["sold_date"] = timestamp_toDatetime(ex_house[house_id]["sold_time"])
                     sold_house.append(data[house_id])
@@ -197,11 +199,6 @@ class DataFetcher(object):
         #fw.write(output_json)
         fw.close()
 """
-
-s = DataFetcher("sale")
-r = DataFetcher("rent")
-s_df = pd.DataFrame(s.retrieve_sold_info())
-r_df = pd.DataFrame(r.retrieve_sold_info())
 
 #s_df.to_csv("sold_house.csv")
 #r_df.to_csv("rent_house.csv")
