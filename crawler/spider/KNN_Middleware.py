@@ -103,6 +103,4 @@ def knn_apply1(estimate_type,sale_type,new_added_house):
     return new_added_house
 
 """
-knnMidd = KNN_Middleware()
-new_added_house = knnMidd.KNN_process(house_extracted,log)
 #new_added_house['neighbour'].dtype(str)
