@@ -7,9 +7,6 @@ from knn import locate_range
 from pre_define import train_features
 from pre_define import weights
 import pandas as pd
-house_extracted = "sale_extracted.json"
-log = "user_pipe.log"
-config = "area_config.txt"
 
 class KNN_Middleware(object):
 
