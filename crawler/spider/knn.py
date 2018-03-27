@@ -80,13 +80,19 @@ def locate_postcode(house_id,saletype):
 #house id should be a string
 #{SW:[houseinfo,houseinfo,houseinfo]}
 
-def locate_range(house_id,region_path,saletype):
-    postcode = locate_postcode(house_id,saletype)
+#postcode = locate_postcode(house_id,saletype)
+
+def locate_range(postcode,region_path,saletype):
     region = region_extractor.extract_region(postcode)
+    print(region)
     region_houses = json_reader.json_read(region_path,region+".json")
+
     region_houses_dict = region_houses[0]
-    region_houses = region_houses_dict.values()
-    return list(region_houses)[0]
+    if len(region_houses_dict) ==0:
+        return []
+    else:
+        region_houses = region_houses_dict.values()
+        return list(region_houses)[0]
         
 def extract_house_info(house_id):
     houses = json_reader.json_read("./","sale_extracted.json")[0]
