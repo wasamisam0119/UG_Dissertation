@@ -37,9 +37,9 @@ class AreaPipeline(object):
         area_s_df.columns = groupby_feature+["sale_speed","s_monthview","sale_price"]
         area_r_df.columns = groupby_feature+["rent_speed","r_monthview","rent_price"]
         area_df = pd.merge(area_s_df,area_r_df,on = merge_key)
-        area_df['price-to-rent'] = (area_df['rent_price']/area_df['sale_price']).round(5)
+        area_df['PTR'] = (area_df['rent_price']/area_df['sale_price']).round(5)
 
-        area_df['city'] = area_df.apply(lambda row: matchcity(self.city,rowael),axis = 1)
+        area_df['city'] = area_df.apply(lambda row: matchcity(self.city,row),axis = 1)
         return area_df
 
 def matchcity(city_map,row):
@@ -48,11 +48,10 @@ def matchcity(city_map,row):
 
 
 
-
-
-#t = AreaPipeline("area_config.txt")
-#area_df = t.area_process()
+"""
+t = AreaPipeline("area_config.txt")
+area_df = t.area_process()
 #%run area_info_retri.py
-
-#engine =create_engine('mysql+pymysql://root:@localhost:3306/G53DT?charset=utf8')
-#area_df.to_sql("SuperArea",engine,if_exists = 'replace')
+engine =create_engine('mysql+pymysql://root:@localhost:3306/G53DT?charset=utf8')
+area_df.to_sql("SuperArea",engine,if_exists = 'replace')
+"""
