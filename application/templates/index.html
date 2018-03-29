@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+{% extends 'layout.html' %}
+
+{% block body %}
+    <!--
+<input class="txt" type="search" size="10" name="q" value="">
+-->
+     {% for message in get_flashed_messages() %}
+         <div class="alert alert-warning">
+             {{ message}}
+         </div>
+    {% endfor %}
+
+  <h1>Search Area</h1>
+  {% from "includes/_formhelpers.html" import render_field %}
+  <form method="POST" action="">
+    <div class="form-group">
+      {{render_field(form.name, class_="form-control")}}
+        {{render_field(form.house_type, class_="form-control")}}
+    </div>
+    <p><input type="submit" class="btn btn-primary" value="Search"></p>
+  </form>
+    <!--
+    <div class="hero-content">
+		<div class="display-table width-100 height-100">
+		<div class="display-table-cell vertical-middle align-center">
+			<span class="block strapline-intro">Find your happy</span>
+			<h1 class="hero-strapline">Search properties for sale and to rent in the UK</h1>
+			<form id="initialSearch" action="/search.html" method="get"><fieldset class="hero-fieldset">
+        <div class="inline-block">
+    <input id="searchLocation" name="searchLocation" class="search-location js-typeahead-ready" autofocus="autofocus" placeholder="e.g. 'York', 'NW3', 'NW3 5TY' or 'Waterloo Station'" type="text" value="" autocomplete="off"><input id="locationIdentifier" name="locationIdentifier" type="hidden" value=""><input id="useLocationIdentifier" name="useLocationIdentifier" type="hidden" value="false"><button id="buy" type="submit" class="btn hero-btn" name="buy" value="For sale">For sale</button><button id="rent" type="submit" class="btn hero-btn" name="rent" value="To rent">To rent</button>
+            <br/>
+            <select name="beds_min" id="beds_min" data-search-field="beds" class="" style="display: block; visibility: visible; width: 175px; height: 40px; opacity: 0; position: absolute; top: 0px; left: 0px; cursor: pointer; z-index: 1; margin: 0px; padding: 0px; -webkit-appearance: menulist-button;" data-section="for-sale">
+            <option value="" selected="selected">No min</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+
+            <option value="3">3</option>
+
+            <option value="4">4</option>
+
+            <option value="5">5</option>
+
+            <option value="6">6</option>
+
+</select>
+			<div class="pos-rel">
+        <ul id="typeaheadList" class="type-ahead-list" style="display:none"></ul>
+    </div>
+</div>
+
+
+</fieldset>
+</form></div>
+	</div>
+</div>
+-->
+
+
+{% endblock %}

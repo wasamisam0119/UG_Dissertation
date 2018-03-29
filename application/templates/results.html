@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+
+<head>
+    {% if mymap %}
+    {{mymap.js}}
+    {% endif %}
+</head>
+{% extends 'layout.html' %}
+
+{% block body %}
+    {% if error %}
+  {% endif %}
+
+    {% if mymap%}
+    {{mymap.html}}
+    {{area.to_html(classes="table table-striped") | safe}}
+    {% endif %}
+
+{% endblock %}
+
+
+
+<table class = "side-table">
+
+    {#
+    {% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class=flashes>
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+    {% for key, value in result.iteritems() %}
+        <tr>
+            <th> {{ key }} </th>
+            <td> {{ value }} </td>
+            <td> {{ value }} </td>
+        </tr>
+
+    {% endfor %}
+#}
+</table>
