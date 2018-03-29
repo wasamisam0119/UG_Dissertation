@@ -39,19 +39,19 @@ class AreaPipeline(object):
         area_df = pd.merge(area_s_df,area_r_df,on = merge_key)
         area_df['price-to-rent'] = (area_df['rent_price']/area_df['sale_price']).round(5)
 
-        area_df['city'] = area_df.apply(self.matchcity,axis = 1)
+        area_df['city'] = area_df.apply(lambda row: matchcity(self.city,rowael),axis = 1)
         return area_df
 
-    def matchcity(self,row):
-        region = citypattern.match(row.region).group(0)
-        return self.city.values[self.city['postcode'] ==region][0][1]
+def matchcity(city_map,row):
+    region = citypattern.match(row.region).group(0)
+    return city_map.values[city_map['postcode'] ==region][0][1]
 
 
 
 
 
-t = AreaPipeline("area_config.txt")
-area_df = t.area_process()
+#t = AreaPipeline("area_config.txt")
+#area_df = t.area_process()
 #%run area_info_retri.py
 
 #engine =create_engine('mysql+pymysql://root:@localhost:3306/G53DT?charset=utf8')
