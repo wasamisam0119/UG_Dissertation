@@ -37,6 +37,7 @@ def home_page():
 def search(name,house_type):
     error = None
     mymap = None
+
     area_info = server.fetch_area_info(name,house_type)
     house_info = server.fetch_house_info(name,house_type)
     print(area_info)
@@ -55,7 +56,7 @@ def search(name,house_type):
                        "<p>Number of Bedroom: %d"
                        "<p>Price to rent: %.5f</p>"
                        "<p>Neighbours:</p> %s"
-                       "<a href = \"https://zoopla.co.uk/for-sale/details/%s\">links</a>"%(house.price,house.property_type,house.num_bed,house.PTR,"".join(["<p>%s</p>" % item for item in house.neighbour]),house.listing_id)
+                       "<a href = \"https://zoopla.co.uk/for-sale/details/%s\">links</a>"%(house.price,house.property_type,house.num_bed,house.PTR,"".join(["<p><a href = \"https://zoopla.co.uk/for-sale/details/{0}\">{0}</p>".format(item) for item in house.neighbour]),house.listing_id)
         } for index,house in house_info[:5].iterrows()]
         greenmark=[
             {
@@ -67,7 +68,10 @@ def search(name,house_type):
                            "<p>Number of Bedroom: %d"
                            "<p>Price to rent: %.5f</p>"
                            "<p>Neighbours:</p> %s"
-                           "<a href = \"https://zoopla.co.uk/for-sale/details/%s\">links</a>"%(house.price,house.property_type,house.num_bed,house.PTR,"".join(["<p>%s</p>" % item for item in house.neighbour]),house.listing_id)
+                        
+                           "<a href = \"https://zoopla.co.uk/for-sale/details/%s\">links</a>"%(house.price,house.property_type,
+                                                                                               house.num_bed,house.PTR,
+                                                                                               "".join(["<p><a href = \"https://zoopla.co.uk/for-sale/details/{0}\">{0}</p>".format(item) for item in house.neighbour]),house.listing_id)
             } for index,house in house_info[5:].iterrows()]
 
         mymap = Map(
