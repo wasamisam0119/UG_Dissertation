@@ -7,7 +7,7 @@ from AreaPipeline import AreaPipeline
 house_extracted = "sale_extracted.json"
 log = "user_pipe.log"
 config = "area_config.txt"
-password = "G53psysz3"
+password = ""
 
 
 while True:
