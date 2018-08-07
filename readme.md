@@ -42,5 +42,5 @@ Then it will start crawling and write 4 files:
 
 ### Architecture
 
-![arch](https://github.com/wasamisam0119/UG_Dissertation/blob/newdev/attachment/systemdiagram.png)
+![arch](https://github.com/wasamisam0119/UG_Dissertation/blob/newdev/attachment/systemdiagram.jpg)
 
