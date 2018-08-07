@@ -6,7 +6,7 @@ The aim of this project is to develop a real time system which can catch new pro
 
 
 
-<div align=center>![google-map](https://github.com/wasamisam0119/UG_Dissertation/blob/newdev/attachment/google_map.png?raw=true)</div>
+![google-map](https://github.com/wasamisam0119/UG_Dissertation/blob/newdev/attachment/google_map.png?raw=true)
 
 The application will allow user search areas or cities in different property types and return
 a list of properties each displayed as a flag on the Google Map. The ranking is sort by the
@@ -42,5 +42,5 @@ Then it will start crawling and write 4 files:
 
 ### Architecture
 
-<div align=center>![arch](https://github.com/wasamisam0119/UG_Dissertation/blob/newdev/attachment/systemdiagram.png?raw=true)</div>
+![arch](https://github.com/wasamisam0119/UG_Dissertation/blob/newdev/attachment/systemdiagram.png)
 
