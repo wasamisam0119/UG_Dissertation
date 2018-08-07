@@ -4,6 +4,8 @@ This project is my final year dissertation and the final report is available [he
 
 The aim of this project is to develop a real time system which can catch new properties come up from the market and provide investors property recommendation based on machine learning techniques.  
 
+
+
 <div align=center>![google-map](https://github.com/wasamisam0119/UG_Dissertation/blob/newdev/attachment/google_map.png?raw=true)</div>
 
 The application will allow user search areas or cities in different property types and return
@@ -40,5 +42,5 @@ Then it will start crawling and write 4 files:
 
 ### Architecture
 
-<div align=center>![arch](https://github.com/wasamisam0119/UG_Dissertation/blob/newdev/images/systemdiagram.png?raw=true)</div>
+<div align=center>![arch](https://github.com/wasamisam0119/UG_Dissertation/blob/newdev/attachment/systemdiagram.png?raw=true)</div>
 
