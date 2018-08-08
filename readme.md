@@ -2,7 +2,7 @@
 
 This project is my final year dissertation and the final report is available [here](https://www.academia.edu/s/7b571b33fb/implementation-and-study-of-k-nearest-neighbour-and-regression-algorithm-for-real-time-housing-market-recommendation-application?source=link). 
 
-The aim of this project is to develop a real time system which can catch new properties come up from the market and provide investors property recommendation based on machine learning techniques.  
+The aim of this project is to develop a real time system which can catch new properties come up from the online housing market(Zoopla.com) and provide investors property recommendation based on machine learning techniques.  
 
 
 
